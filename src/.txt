@@ -1,0 +1,78 @@
+app.component.html
+<h1>Login with Google</h1>
+
+<button (click)="signInWithGoogle()">Login with Google</button>
+<button *ngIf="user" (click)="signOut()">Logout</button>
+
+<div *ngIf="user">
+  <p>Welcome, {{user.name}}</p>
+  <p>{{user.email}}</p>
+  <img [src]="user.photoUrl" alt="User Photo" />
+</div>
+
+
+app.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { SocialAuthService, GoogleLoginProvider, SocialUser } from '@abacritt/angularx-social-login';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html'
+})
+export class AppComponent implements OnInit {
+  user: SocialUser | null = null;
+
+  constructor(private authService: SocialAuthService) {}
+
+  ngOnInit() {
+    this.authService.authState.subscribe((user) => {
+      this.user = user;
+    });
+  }
+
+  signInWithGoogle(): void {
+    this.authService.signIn(GoogleLoginProvider.PROVIDER_ID);
+  }
+
+  signOut(): void {
+    this.authService.signOut();
+  }
+}
+
+
+app.module.ts
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { SocialLoginModule, SocialAuthServiceConfig, GoogleLoginProvider } from '@abacritt/angularx-social-login';
+
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    SocialLoginModule
+  ],
+  providers: [
+    {
+      provide: 'SocialAuthServiceConfig',
+      useValue: {
+        autoLogin: false,
+        providers: [
+          {
+            id: GoogleLoginProvider.PROVIDER_ID,
+            provider: new GoogleLoginProvider(
+              'YOUR_GOOGLE_CLIENT_ID_HERE' // <-- حط Client ID بتاعك
+            )
+          }
+        ]
+      } as SocialAuthServiceConfig,
+    }
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
